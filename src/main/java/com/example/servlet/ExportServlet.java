@@ -1,3 +1,4 @@
+// File: ExportServlet.java
 package com.example.servlet;
 
 import com.example.processor.DatabaseExcelExporter;
@@ -10,31 +11,33 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.sql.*;
+import java.net.URLEncoder; // Added for URL encoding
+import java.nio.charset.StandardCharsets; // Added for UTF-8 charset
 
 @WebServlet("/export")
 public class ExportServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	    String templateIdStr = request.getParameter("templateId");
-	    if (templateIdStr == null || templateIdStr.isEmpty()) {
-	        sendJsonError(response, HttpServletResponse.SC_BAD_REQUEST, "Template ID is required");
+		
+		HttpSession session = request.getSession(false);
+		if (session == null || session.getAttribute("userId") == null) {
+		    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Please log in");
+		    return;
+		}
+		
+		request.setCharacterEncoding("UTF-8");
+	    String templateCategory = request.getParameter("templateCategory");
+	    if (templateCategory == null || templateCategory.isEmpty()) {
+	        sendJsonError(response, HttpServletResponse.SC_BAD_REQUEST, "Template Category is required");
 	        return;
 	    }
 
-	    int templateId;
-	    try {
-	        templateId = Integer.parseInt(templateIdStr);
-	    } catch (NumberFormatException e) {
-	        sendJsonError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid Template ID");
-	        return;
-	    }
-
-	    // Check if data exists for the template
+	    // Check if data exists for the template category
 	    try (Connection conn = DatabaseConnection.getConnection();
-	         PreparedStatement pstmt = conn.prepareStatement("SELECT COUNT(*) FROM Responses WHERE TemplateID = ?")) {
-	        pstmt.setInt(1, templateId);
+	         PreparedStatement pstmt = conn.prepareStatement("SELECT COUNT(*) FROM Templates WHERE TemplateCategory = ?")) {
+	        pstmt.setString(1, templateCategory);
 	        try (ResultSet rs = pstmt.executeQuery()) {
 	            if (rs.next() && rs.getInt(1) == 0) {
-	                sendJsonError(response, HttpServletResponse.SC_NOT_FOUND, "No data found for Template ID: " + templateId);
+	                sendJsonError(response, HttpServletResponse.SC_NOT_FOUND, "No data found for Template Category: " + templateCategory);
 	                return;
 	            }
 	        }
@@ -46,23 +49,33 @@ public class ExportServlet extends HttpServlet {
 	    // Generate the Excel file first without committing the response
 	    try (Connection conn = DatabaseConnection.getConnection();
 	         ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-	        // Export to ByteArrayOutputStream
-	        DatabaseExcelExporter.exportDatabaseToExcel(conn, baos, templateId);
+	        
+	        DatabaseExcelExporter.exportDatabaseToExcel(conn, baos, templateCategory);
 
-	        // If successful, set headers and write to output stream
 	        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-	        response.setHeader("Content-Disposition", "attachment; filename=\"template_export_" + templateId + ".xlsx\"");
+	        
+	        // FIXED: URL-encode the filename for Content-Disposition header
+	        String fileName = templateCategory.replaceAll(" ", "_") + "_export.xlsx";
+	        String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8.toString()).replaceAll("\\+", "%20"); // Handle spaces
+	        
+	        response.setHeader("Content-Disposition", "attachment; filename=\"" + encodedFileName + "\"");
+	        // For better compatibility with some browsers, might also use filename* as per RFC 5987,
+	        // but this simple filename encoding often suffices to prevent the IllegalArgumentException.
+	        // response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + encodedFileName);
+
+
 	        try (OutputStream out = response.getOutputStream()) {
 	            baos.writeTo(out);
 	            out.flush();
 	        }
 	    } catch (Exception e) {
-	        // Only send JSON error if the response isn’t committed
+	        System.err.println("Error during Excel export for category: " + templateCategory);
+	        e.printStackTrace(System.err); 
+
 	        if (!response.isCommitted()) {
 	            sendJsonError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error exporting data: " + e.getMessage());
 	        } else {
-	            // Log the error if the response is already committed
-	            System.err.println("Error exporting data after response committed: " + e.getMessage());
+	            System.err.println("Response already committed. Cannot send JSON error response.");
 	        }
 	    }
 	}

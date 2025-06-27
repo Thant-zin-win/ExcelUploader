@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Templates</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" type="image/png" href="favicon3.png">
+</head>
+<body>
+
+	<!-- Script to check login status on page load -->
+	<script>
+	    fetch('/ExcelUploader/checkLogin')
+	        .then(response => response.json())
+	        .then(data => {
+	            if (!data.loggedIn) {
+	                window.location.href = 'login.html';
+	            }
+	        })
+	        .catch(error => {
+	            console.error('Error checking login status:', error);
+	            window.location.href = 'login.html';
+	        });
+	</script>
+
+   <div class="main-container2">
+        <h2 align="center">Manage Template</h2>
+        
+        <div class="mb-3">
+            <label for="existingTemplateSelect" class="form-label">Select Template Category to Edit</label>
+            <select id="existingTemplateSelect" class="form-select">
+                <option value="">Select a Category</option>
+                <!-- Existing categories will be populated here dynamically by JavaScript -->
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="newCategoryName" class="form-label">New Template Category Name</label>
+            <input type="text" class="form-control" id="newCategoryName" placeholder="Enter new category name">
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <a href="index.html" class="btn-neon btn-blue btn-back">Back</a>
+            <button type="button" class="btn-neon btn-green" id="saveCategoryBtn">Save Changes</button>
+        </div>
+    </div>
+
+    <!-- Modal for displaying messages -->
+    <div class="modal" id="modal">
+        <div class="modal-content" id="modal-content"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/manage.js"></script>
+</body>
+</html>

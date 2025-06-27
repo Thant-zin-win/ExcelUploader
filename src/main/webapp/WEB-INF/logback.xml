@@ -1,0 +1,15 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO"> <!-- Set to INFO for production, DEBUG for tracing -->
+        <appender-ref ref="STDOUT" />
+    </root>
+
+    <!-- Set specific logger levels for your servlets if needed -->
+    <logger name="com.example.servlet.DeleteTemplateServlet" level="DEBUG" />
+    <logger name="com.example.servlet.UpdateTemplateServlet" level="DEBUG" />
+</configuration>

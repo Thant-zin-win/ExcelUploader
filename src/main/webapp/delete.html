@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Templates</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" type="image/png" href="favicon3.png">
+    
+</head>
+<body>
+
+	<!-- Script to check login status on page load -->
+	<script>
+	    fetch('/ExcelUploader/checkLogin')
+	        .then(response => response.json())
+	        .then(data => {
+	            if (!data.loggedIn) {
+	                window.location.href = 'login.html';
+	            }
+	        })
+	        .catch(error => {
+	            console.error('Error checking login status:', error);
+	            window.location.href = 'login.html';
+	        });
+	</script>
+
+
+   <div class="main-container2">
+        <h2 align="center">Delete Templates</h2>
+        <form id="deleteForm">
+            <!-- Section: Template Category Selection -->
+            <!-- This dropdown allows users to select a specific category of templates to view and delete. -->
+            <div class="mb-3">
+                <label for="templateCategorySelect" class="form-label">Select Template Category</label>
+                <select id="templateCategorySelect" class="form-select">
+                    <option value="">Select a Category</option>
+                    <!-- Template categories will be populated here dynamically by JavaScript -->
+                </select>
+            </div>
+
+            <!-- Section: Template List with Checkboxes -->
+            <!-- This div will be populated with checkboxes for individual templates within the selected category. -->
+            <div class="mb-3 d-flex justify-content-between">
+                <label for="templateList" class="form-label">Templates in Selected Category</label>
+                <!-- MOVED: Checkbox to select/deselect all templates in the list is now after counters -->
+                <div class="form-check mb-2">
+                	<label class="form-check-label" for="selectAllTemplates">Select All</label>
+                    <input type="checkbox" class="form-check-input" id="selectAllTemplates">
+                	<div id="templateCountDisplay" class="template-count-display ms-2">
+                        <span id="selectedCount">0</span> / <span id="totalCount">0</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Container for the dynamically generated template checkboxes -->
+                <!-- MODIFIED: Removed 'form-control' class from the templateList div -->
+                <div id="templateList" class="mb-3" style="max-height: 200px; overflow-y: auto; padding: 10px; border: 1px solid #dcdcdc; border-radius: 12px; background-color: rgba(255, 255, 255, 0.07);">
+                    <!-- Initial message before a category is selected -->
+                    <p>Select a category to view templates.</p>
+                </div>
+            <!-- Section: Action Buttons -->
+            <!-- Buttons for navigating back to the main page and initiating the deletion process. -->
+            <div class="d-flex justify-content-between">
+                <a href="index.html" class="btn-neon btn-blue btn-back">Back</a>
+                <button type="button" class="btn-neon btn-red delete-btn" onclick="deleteTemplates()">Delete</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Modal for displaying messages (e.g., confirmations, errors) -->
+    <div class="modal" id="modal">
+        <div class="modal-content" id="modal-content"></div>
+    </div>
+
+    <!-- Bootstrap and custom JavaScript files -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/delete.js"></script>
+</body>
+</html>

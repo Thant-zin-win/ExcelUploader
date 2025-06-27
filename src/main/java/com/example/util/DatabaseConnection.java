@@ -1,3 +1,4 @@
+// File: DatabaseConnection.java
 package com.example.util;
 
 import java.sql.Connection;
@@ -5,9 +6,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseConnection {
-    private static final String URL = "jdbc:mysql://localhost:3306/second_pj?useSSL=false&serverTimezone=UTC";
-    private static final String USER = "root"; // Replace with  MySQL username
-    private static final String PASSWORD = "root"; // Replace with  MySQL password
+    // FIXED: Added characterEncoding=UTF-8 and useUnicode=true to the URL
+    private static final String URL = "jdbc:mysql://localhost:3306/fourth_pj?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC";
+    private static final String USER = "root"; // Replace with MySQL username
+    private static final String PASSWORD = "root"; // Replace with MySQL password
 
     public static Connection getConnection() throws SQLException {
         try {
@@ -17,4 +19,4 @@ public class DatabaseConnection {
             throw new SQLException("MySQL driver not found: " + e.getMessage(), e);
         }
     }
-}	
+}
